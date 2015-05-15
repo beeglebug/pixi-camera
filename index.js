@@ -1,26 +1,30 @@
-var PIXI = require('pixi.js');
-
+/**
+ * @todo calculate bounds automatically if bounded
+ * @param world
+ * @constructor
+ */
 var Camera = function (world) {
 
     PIXI.Container.call(this);
 
     this.world = world;
 
-    this.ui = new PIXI.Container();
+    this.root = new PIXI.Container();
 
     this.target = new PIXI.Point();
-    this._follow = null;
 
     this.mask = new PIXI.Graphics();
     this.viewport = new PIXI.Rectangle(0, 0, 300, 300);
     this.frustrum = this.viewport.clone();
 
-    this.bounds = null;
+    this.bounded = false;
 
     this._redrawMask();
 
+    this.addChild(this.root);
     this.addChild(this.mask);
-    this.addChild(this.world);
+
+    this.root.addChild(this.world);
 };
 
 Camera.prototype = Object.create(PIXI.Container.prototype);
@@ -45,7 +49,6 @@ Camera.prototype.update = function (dt) {
     );
 };
 
-
 /**
  * keep the frustrum in scale relative to the viewport
  * @private
@@ -62,24 +65,24 @@ Camera.prototype._scaleFrustrum = function () {
  */
 Camera.prototype._constrainFrustrum = function () {
 
-    if (!this.bounds) {
+    if (!this.bounded) {
         return;
     }
 
-    if (this.frustrum.x < this.bounds.x) {
-        this.frustrum.x = this.bounds.x;
+    if (this.frustrum.x < this._bounds.x) {
+        this.frustrum.x = this._bounds.x;
     }
 
-    if (this.frustrum.y < this.bounds.y) {
-        this.frustrum.y = this.bounds.y;
+    if (this.frustrum.y < this._bounds.y) {
+        this.frustrum.y = this._bounds.y;
     }
 
-    if (this.frustrum.x + this.frustrum.width > this.bounds.x + this.bounds.width) {
-        this.frustrum.x = this.bounds.x + this.bounds.width - this.frustrum.width;
+    if (this.frustrum.x + this.frustrum.width > this._bounds.x + this._bounds.width) {
+        this.frustrum.x = this._bounds.x + this._bounds.width - this.frustrum.width;
     }
 
-    if (this.frustrum.y + this.frustrum.height > this.bounds.y + this.bounds.height) {
-        this.frustrum.y = this.bounds.y + this.bounds.height - this.frustrum.height;
+    if (this.frustrum.y + this.frustrum.height > this._bounds.y + this._bounds.height) {
+        this.frustrum.y = this._bounds.y + this._bounds.height - this.frustrum.height;
     }
 };
 
